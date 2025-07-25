@@ -1,0 +1,4 @@
+.venv/
+*.txt
+*.json
+ruff.toml
