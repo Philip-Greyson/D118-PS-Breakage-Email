@@ -1,6 +1,6 @@
 """Script to send an email to contacts with data access when their student has a breakage recorded in MBA Device Manager+.
 
-https://github.com/Philip-Greyson/D118-Breakage-Email
+https://github.com/Philip-Greyson/D118-PS-Breakage-Email
 
 Needs the google-api-python-client, google-auth-httplib2 and the google-auth-oauthlib:
 pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
@@ -34,14 +34,35 @@ DAYS_TO_SEARCH_BACK = 90  # set the number of days ago to search for breakages. 
 SCOPES = ['https://www.googleapis.com/auth/gmail.compose']
 
 
-def get_data_access_contacts(student_dcid: int) -> dict:
+def get_data_access_contacts(student_dcid: int) -> list:
     """Function to take a student DCID number, and return a dictionary of the contacts with data access names and emails."""
-    cur.execute('SELECT p.firstname, p.lastname, email.emailaddress FROM guardianstudent gs LEFT JOIN guardianpersonassoc gpa ON gs.guardianid = gpa.guardianid LEFT JOIN personemailaddressassoc pemail ON pemail.personid = gpa.personid LEFT JOIN emailaddress email ON email.emailaddressid = pemail.emailaddressid LEFT JOIN person p ON gpa.personid = p.id WHERE gs.studentsdcid = :dcid AND pemail.isprimaryemailaddress = 1', dcid=student_dcid)
+    cur.execute('SELECT p.firstname, p.lastname, email.emailaddress FROM guardianstudent gs \
+                LEFT JOIN guardianpersonassoc gpa ON gs.guardianid = gpa.guardianid \
+                LEFT JOIN personemailaddressassoc pemail ON pemail.personid = gpa.personid \
+                LEFT JOIN emailaddress email ON email.emailaddressid = pemail.emailaddressid \
+                LEFT JOIN person p ON gpa.personid = p.id \
+                WHERE gs.studentsdcid = :dcid AND pemail.isprimaryemailaddress = 1', dcid=student_dcid)
     guardians = cur.fetchall()
     print(f'DBUG: Number of guardians with data access: {len(guardians)}')
     print(f'DBUG: Number of guardians with data access: {len(guardians)}', file=log)
     print(guardians)
     print(guardians, file=log)
+
+def get_custody_contacts(student_dcid:int) -> list:
+    """Function to take a student DCID number and return dictionary of the contacts with custody names and emails."""
+    cur.execute('SELECT p.firstname, p.lastname, email.emailaddress FROM studentcontactassoc sca \
+                LEFT JOIN studentcontactdetail scd ON scd.studentcontactassocid = sca.studentcontactassocid \
+                LEFT JOIN personemailaddressassoc pemail ON pemail.personid = sca.personid \
+                LEFT JOIN emailaddress email ON email.emailaddressid = pemail.emailaddressid \
+                LEFT JOIN person p ON sca.personid = p.id \
+                WHERE sca.studentdcid = :dcid AND scd.isactive = 1 AND scd.iscustodial = 1 AND pemail.isprimaryemailaddress = 1', dcid=student_dcid)
+    custodians = cur.fetchall()
+    print(f'DBUG: Number of contacts with custody: {len(custodians)}')
+    print(f'DBUG: Number of contacts with custody: {len(custodians)}', file=log)
+    print(custodians)
+    print(custodians, file=log)
+    return custodians if len(custodians) > 0 else None  # if we had results, return the list of tuples, otherwise just return None
+
 
 if __name__ == '__main__':
     with open('breakage_email_log.txt', 'w') as log:
@@ -82,11 +103,25 @@ if __name__ == '__main__':
                     for breakage in breakages:
                         try:
                             print(breakage)
+                            print(breakage, file=log)
                             stuDCID = int(breakage[0])
                             stuNum = int(breakage[1])
                             firstName = str(breakage[2])
                             lastName = str(breakage[3])
-                            get_data_access_contacts(stuDCID)  # get the contacts with data access
+                            breakageDetails = str(breakage[4])
+                            breakageID = int(breakage[6])
+                            # get_data_access_contacts(stuDCID)  # get the contacts with data access
+                            contactsToEmail = get_custody_contacts(stuDCID)  # get the contacts with custody
+                            if contactsToEmail:
+                                for contact in contactsToEmail:
+                                    try:
+                                        contactFirstLast = f'{contact[0]} {contact[1]}'  # get their name in one string
+                                        contactEmail = str(contact[2])
+                                        print(f'INFO: Sending email to {contactFirstLast} - {contactEmail} about breakageID {breakageID}')
+                                        print(f'INFO: Sending email to {contactFirstLast} - {contactEmail} about breakageID {breakageID}', file=log)
+                                    except Exception as er:
+                                        print(f'ERROR while sending email to {contact[3]} about breakage ID {breakageID}: {er}')
+                                        print(f'ERROR while sending email to {contact[3]} about breakage ID {breakageID}: {er}', file=log)
                         except Exception as er:
                             print(f'ERROR while processing breakage {breakage[5]}: {er}')
                             print(f'ERROR while processing breakage {breakage[5]}: {er}', file=log)
