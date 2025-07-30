@@ -105,7 +105,7 @@ if __name__ == '__main__':
                             firstName = str(breakage[2]).title()  # convert names from all caps to normal
                             lastName = str(breakage[3]).title()
                             breakageDetails = str(breakage[4])
-                            breakageDate = breakage[5].strftime('%-m/%-d/%Y')
+                            breakageDate = breakage[5].strftime('%m/%d/%Y')
                             breakageID = int(breakage[6])
                             # get_data_access_contacts(stuDCID)  # get the contacts with data access
                             print(f'DBUG: Getting contacts for {stuNum} - DCID {stuDCID} for breakageID {breakageID}')
@@ -139,5 +139,5 @@ if __name__ == '__main__':
                                         print(f'ERROR while sending email to {contact[3]} about breakage ID {breakageID}: {er}')
                                         print(f'ERROR while sending email to {contact[3]} about breakage ID {breakageID}: {er}', file=log)
                         except Exception as er:
-                            print(f'ERROR while processing breakage {breakage[5]}: {er}')
-                            print(f'ERROR while processing breakage {breakage[5]}: {er}', file=log)
+                            print(f'ERROR while processing breakage {breakage[6]}: {er}')
+                            print(f'ERROR while processing breakage {breakage[6]}: {er}', file=log)
