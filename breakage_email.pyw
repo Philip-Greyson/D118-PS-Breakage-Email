@@ -141,3 +141,7 @@ if __name__ == '__main__':
                         except Exception as er:
                             print(f'ERROR while processing breakage {breakage[6]}: {er}')
                             print(f'ERROR while processing breakage {breakage[6]}: {er}', file=log)
+        endtime = dt.now()
+        endtime = endtime.strftime('%H:%M:%S')
+        print(f'INFO: Execution ended at {endtime}')
+        print(f'INFO: Execution ended at {endtime}', file=log)
