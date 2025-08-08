@@ -101,7 +101,7 @@ if __name__ == '__main__':
                     with con.cursor() as cur:  # start an entry cursor
                         today = dt.now()  # get current date and time
                         searchDate = today - timedelta(days=DAYS_TO_SEARCH_BACK)  # set the start date we will compare to the breakage entry date by subtracting our timeframe from the current date
-                        cur.execute('SELECT s.dcid, s.student_number, s.first_name, s.last_name, br.breakage_details, br.breakage_date, br.id FROM u_mba_device_breakage br LEFT JOIN students s ON br.studentid = s.id WHERE br.whencreated >= :startdate', startdate=searchDate)
+                        cur.execute('SELECT s.dcid, s.student_number, s.first_name, s.last_name, br.breakage_details, br.breakage_date, br.id, dev.device_name, dev.serial_number, schools.name FROM u_mba_device_breakage br LEFT JOIN students s ON br.studentid = s.id LEFT JOIN schools ON s.schoolid = schools.school_number LEFT JOIN u_mba_device dev ON br.deviceid = dev.id WHERE br.whencreated >= :startdate', startdate=searchDate)
                         breakages = cur.fetchall()
                         for breakage in breakages:
                             try:
@@ -114,6 +114,9 @@ if __name__ == '__main__':
                                 breakageDetails = str(breakage[4])
                                 breakageDate = breakage[5].strftime('%m/%d/%Y')
                                 breakageID = int(breakage[6])
+                                devName = str(breakage[7])
+                                serial = str(breakage[8])
+                                schoolName = str(breakage[9])
                                 # get_data_access_contacts(stuDCID)  # get the contacts with data access
                                 print(f'DBUG: Getting contacts for {stuNum} - DCID {stuDCID} for breakageID {breakageID}')
                                 print(f'DBUG: Getting contacts for {stuNum} - DCID {stuDCID} for breakageID {breakageID}', file=log)
@@ -123,14 +126,14 @@ if __name__ == '__main__':
                                         try:
                                             contactFirstLast = f'{contact[0]} {contact[1]}'  # get their name in one string
                                             toEmail = str(contact[2])
-                                            print(f'INFO: Sending email to {contactFirstLast} - {toEmail} about breakageID {breakageID} that happened on {breakageDate}')
-                                            print(f'INFO: Sending email to {contactFirstLast} - {toEmail} about breakageID {breakageID} that happened on {breakageDate}', file=log)
+                                            print(f'INFO: Sending email to {contactFirstLast} - {toEmail} about breakageID {breakageID} that happened on {breakageDate} at {schoolName} to device {serial} by student {stuNum}')
+                                            print(f'INFO: Sending email to {contactFirstLast} - {toEmail} about breakageID {breakageID} that happened on {breakageDate} at {schoolName} to device {serial} by student {stuNum}', file=log)
                                             # Do the email sending
                                             mime_message = EmailMessage()  # create an email message object
                                             # define headers
                                             mime_message['To'] = toEmail
                                             mime_message['Subject'] = f'Chromebook Breakage for Student {stuNum} on {breakageDate}'  # subject line of the email
-                                            mime_message.set_content(f'Hello {contactFirstLast},\nThis email is to inform you of a device breakage that occured on {breakageDate} by your student {firstName} {lastName} - {stuNum}.\nThe details of the breakage are: {breakageDetails}\n\nPlease contact your building\'s administration team if you have any questions or concerns.')  # body of the email
+                                            mime_message.set_content(f'Dear {contactFirstLast},\nThis email is to inform you about a damaged school-assigned device for {firstName} {lastName} at {schoolName}. We want to make sure you have all the information regarding the incident.\nHere are the details we have on file:\n•Device Name: {devName}\n•Serial Number: {serial}\n•Date of Damage: {breakageDate}\n•Damage Details: {breakageDetails}\nThe warranty on this device covers accidental damage. Please note that if the damage is found to be intentional by the school administration, the cost of repair or replacement will be charged to your student\'s account.\nWe also want to let you know that a pattern of repeated device damage may lead to additional charges.\nPlease contact the building\'s administration team with any questions or concerns.')
                                             # encoded message
                                             encoded_message = base64.urlsafe_b64encode(mime_message.as_bytes()).decode()
                                             create_message = {'raw': encoded_message}
