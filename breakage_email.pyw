@@ -101,7 +101,7 @@ if __name__ == '__main__':
                     with con.cursor() as cur:  # start an entry cursor
                         today = dt.now()  # get current date and time
                         searchDate = today - timedelta(days=DAYS_TO_SEARCH_BACK)  # set the start date we will compare to the breakage entry date by subtracting our timeframe from the current date
-                        cur.execute('SELECT s.dcid, s.student_number, s.first_name, s.last_name, br.breakage_details, br.breakage_date, br.id, dev.device_name, dev.serial_number, schools.name FROM u_mba_device_breakage br LEFT JOIN students s ON br.studentid = s.id LEFT JOIN schools ON s.schoolid = schools.school_number LEFT JOIN u_mba_device dev ON br.deviceid = dev.id WHERE br.whencreated >= :startdate', startdate=searchDate)
+                        cur.execute('SELECT s.dcid, s.student_number, s.first_name, s.last_name, br.breakage_details, br.breakage_date, br.id, dev.device_name, dev.serial_number, schools.name FROM u_mba_device_breakage br LEFT JOIN students s ON br.studentid = s.id LEFT JOIN schools ON s.schoolid = schools.school_number LEFT JOIN u_mba_device dev ON br.deviceid = dev.id WHERE br.whencreated >= :startdate AND br.studentid IS NOT NULL', startdate=searchDate)
                         breakages = cur.fetchall()
                         for breakage in breakages:
                             try:
