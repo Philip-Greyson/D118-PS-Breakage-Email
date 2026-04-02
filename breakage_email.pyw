@@ -132,8 +132,49 @@ if __name__ == '__main__':
                                             mime_message = EmailMessage()  # create an email message object
                                             # define headers
                                             mime_message['To'] = toEmail
-                                            mime_message['Subject'] = f'Chromebook Breakage for Student {stuNum} on {breakageDate}'  # subject line of the email
-                                            mime_message.set_content(f'Dear {contactFirstLast},\nThis email is to inform you about a damaged school-assigned device for {firstName} {lastName} at {schoolName}. We want to make sure you have all the information regarding the incident.\n\nHere are the details we have on file:\n•Device Name: {devName}\n•Serial Number: {serial}\n•Date of Damage: {breakageDate}\n•Damage Details: {breakageDetails}\n\nThe warranty on this device covers accidental damage. Please note that if the damage is found to be intentional by the school administration, the cost of repair or replacement will be charged to your student\'s account.\nWe also want to let you know that a pattern of repeated device damage may lead to additional charges.\n\nPlease contact the building\'s administration team with any questions or concerns.')
+                                            mime_message['Subject'] = f'Notification of Student Device Damage - {firstName} {lastName}'  # subject line of the email
+
+                                            # Plain-text fallback (for email clients that don't support HTML)
+                                            plain_text = (
+                                                f'Dear {contactFirstLast},\n'
+                                                f'This email is to notify you that damage has been reported for the school-assigned device currently issued to {firstName} {lastName} at {schoolName}. Our goal is to keep you informed regarding the condition of the technology provided to your student.\n\n'
+                                                f'Incident Details:\n'
+                                                f'  • Device Name: {devName}\n'
+                                                f'  • Serial Number: {serial}\n'
+                                                f'  • Date of Damage: {breakageDate}\n'
+                                                f'  • Description of Damage: {breakageDetails}\n\n'
+                                                f'Warranty and Responsibility Information: The district-provided warranty covers standard accidental damage. However, please be aware of the following policies:\n'
+                                                f'  • Intentional Damage: If school administration determines that damage was caused intentionally, the cost of the repair or device replacement will be charged to your student\'s account. Should this be the case, a building administrator will be in contact with you.\n'
+                                                f'  • Repeated Incidents: A recurring pattern of device damage may result in additional repair fees or a review of the student\'s equipment access. If you have further questions related to this, please contact your child\'s building Technology Specialist.\n\n'
+                                                f'If you have any questions regarding this incident or the repair process, please contact the building\'s administration team directly.\n'
+                                                f'Best regards,\n'
+                                                f'District 118 Technology Department'
+                                            )
+
+                                            # HTML version with bold formatting
+                                            html_content = (
+                                                f'<p>Dear {contactFirstLast},</p>'
+                                                f'<p>This email is to notify you that damage has been reported for the school-assigned device currently issued to <b>{firstName} {lastName}</b> at <b>{schoolName}</b>. Our goal is to keep you informed regarding the condition of the technology provided to your student.</p>'
+                                                f'<p><b>Incident Details:</b></p>'
+                                                f'<ul>'
+                                                f'  <li><b>Device Name:</b> {devName}</li>'
+                                                f'  <li><b>Serial Number:</b> {serial}</li>'
+                                                f'  <li><b>Date of Damage:</b> {breakageDate}</li>'
+                                                f'  <li><b>Description of Damage:</b> {breakageDetails}</li>'
+                                                f'</ul>'
+                                                f'<p><b>Warranty and Responsibility Information:</b> The district-provided warranty covers standard accidental damage. However, please be aware of the following policies:</p>'
+                                                f'<ul>'
+                                                f'  <li><b>Intentional Damage:</b> If school administration determines that damage was caused intentionally, the cost of the repair or device replacement will be charged to your student\'s account. Should this be the case, a building administrator will be in contact with you.</li>'
+                                                f'  <li><b>Repeated Incidents:</b> A recurring pattern of device damage may result in additional repair fees or a review of the student\'s equipment access. If you have further questions related to this, please contact your child\'s building Technology Specialist.</li>'
+                                                f'</ul>'
+                                                f'<p>If you have any questions regarding this incident or the repair process, please contact the building\'s administration team directly.</p>'
+                                                f'<p>Best regards,<br><b>District 118 Technology Department</b></p>'
+                                            )
+
+                                            # Set plain text as the base content, then add HTML as the preferred alternative
+                                            mime_message.set_content(plain_text)
+                                            mime_message.add_alternative(html_content, subtype='html')
+
                                             # encoded message
                                             encoded_message = base64.urlsafe_b64encode(mime_message.as_bytes()).decode()
                                             create_message = {'raw': encoded_message}
