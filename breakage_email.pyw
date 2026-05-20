@@ -313,7 +313,7 @@ def send_stolen_email_to_parents(breakage_id: int, breakage_date: str, school_na
         print(f'ERROR while constructing contact list to contact for student {stu_num} about stolen device with breakage ID {breakageID}: {er}')
         print(f'ERROR while constructing contact list to contact for student {stu_num} about stolen device with breakage ID {breakageID}: {er}', file=log)
 
-def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str, stu_num: int, first_name: str, last_name: str) -> None:
+def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str, stu_num: int, first_name: str, last_name: str, serial: str) -> None:
     """Function to send the email about the lost device to the bookkeepers."""
     to_email = f"{school_abbreviation}{BOOKKEEPER_EMAIL_SUFFIX}"
     print(f'INFO: Sending email to bookkeeper at {to_email} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.')
@@ -328,7 +328,7 @@ def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str,
         # Plain-text fallback (for email clients that don't support HTML)
         plain_text = (
             f'Dear {school_abbreviation} Bookkeeper,\n'
-            f'Student {stu_num} - {first_name} {last_name} reported their district-issued Chromebook as lost on {breakage_date}.\n'
+            f'Student {stu_num} - {first_name} {last_name} reported their district-issued Chromebook with serial number {serial} as lost on {breakage_date}.\n'
             f'Please add a charge to their account of $351 for the lost device.\n\n'
             f'If you have further questions, please reach out to your building technology specialist and your administration team.\n\n'
             f'Best regards,\n'
@@ -338,7 +338,7 @@ def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str,
         # HTML version with bold formatting
         html_content = (
             f'<p>Dear {school_abbreviation} Bookkeeper,</p>'
-            f'<p>Student {stu_num} - {first_name} {last_name} reported their district-issued Chromebook as lost on {breakage_date}.</p>'
+            f'<p>Student {stu_num} - {first_name} {last_name} reported their district-issued Chromebook with serial number {serial} as lost on {breakage_date}.</p>'
             f'<p>Please add a charge to their account of <b>$351</b> for the lost device.</p>'
             f'<p>If you have further questions, please reach out to your building technology specialist and your administration team.</p>'
             f'<p>Best regards,<br><b>District 118 Technology Department</b></p>'
@@ -497,7 +497,7 @@ if __name__ == '__main__':
                                     print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody and bookkeepers')
                                     print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody and bookkeepers', file=log)
                                     send_lost_email_to_parents(breakageID, breakageDate, schoolName, devName, serial, breakageDetails, stuNum, stuDCID, firstName, lastName)  # send the email to the contacts with custody including all the details
-                                    send_lost_email_to_bookkeepers(schoolAbbrev, breakageDate, stuNum, firstName, lastName)  # send the email to the bookkeeper to notify them of the lost device and charge needed
+                                    send_lost_email_to_bookkeepers(schoolAbbrev, breakageDate, stuNum, firstName, lastName, serial)  # send the email to the bookkeeper to notify them of the lost device and charge needed
                                 elif deviceStatus == 'Stolen':
                                     print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody and admins')
                                     print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody and admins', file=log)
