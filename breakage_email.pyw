@@ -78,7 +78,7 @@ def send_breakage_email_to_parents(breakage_id: int, breakage_date: str, school_
             for contact in contacts_to_email:
                 try:
                     contact_first_last = f'{contact[0]} {contact[1]}'  # get their name in one string
-                    to_email = str(contact[2])
+                    to_email = str(contact[2]) if not TEST_RUN else TEST_EMAIL
                     print(f'INFO: Sending email to {contact_first_last} - {to_email} about breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}')
                     print(f'INFO: Sending email to {contact_first_last} - {to_email} about breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}', file=log)
                     # Do the email sending
@@ -159,7 +159,7 @@ def send_lost_email_to_parents(breakage_id: int, breakage_date: str, school_name
             for contact in contacts_to_email:
                 try:
                     contact_first_last = f'{contact[0]} {contact[1]}'  # get their name in one string
-                    to_email = str(contact[2])
+                    to_email = str(contact[2]) if not TEST_RUN else TEST_EMAIL
                     print(f'INFO: Sending email to {contact_first_last} - {to_email} about lost device breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}')
                     print(f'INFO: Sending email to {contact_first_last} - {to_email} about lost device breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}', file=log)
                     # Do the email sending
@@ -244,7 +244,7 @@ def send_stolen_email_to_parents(breakage_id: int, breakage_date: str, school_na
             for contact in contacts_to_email:
                 try:
                     contact_first_last = f'{contact[0]} {contact[1]}'  # get their name in one string
-                    to_email = str(contact[2])
+                    to_email = str(contact[2]) if not TEST_RUN else TEST_EMAIL
                     print(f'INFO: Sending email to {contact_first_last} - {to_email} about stolen device breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}')
                     print(f'INFO: Sending email to {contact_first_last} - {to_email} about stolen device breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}', file=log)
                     # Do the email sending
@@ -316,8 +316,8 @@ def send_stolen_email_to_parents(breakage_id: int, breakage_date: str, school_na
 def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str, stu_num: int, first_name: str, last_name: str, serial: str) -> None:
     """Function to send the email about the lost device to the bookkeepers."""
     to_email = f"{school_abbreviation}{BOOKKEEPER_EMAIL_SUFFIX}"
-    print(f'INFO: Sending email to bookkeeper at {to_email} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.')
-    print(f'INFO: Sending email to bookkeeper at {to_email} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.', file=log)
+    print(f'INFO: Sending email to bookkeeper at {to_email if not TEST_RUN else TEST_EMAIL} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.')
+    print(f'INFO: Sending email to bookkeeper at {to_email if not TEST_RUN else TEST_EMAIL} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.', file=log)
     try:
         # Do the email sending
         mime_message = EmailMessage()  # create an email message object
@@ -382,8 +382,8 @@ def send_stolen_email_to_admins(school_abbreviation: str, stu_num: int, first_na
         dean_email = dean_info[1]
         to_email = f'{to_email},{dean_email}'  # add the dean to the email list
         to_names = f'{to_names} and {dean_name}'  # add the dean to the names list for the email greeting
-    print(f'INFO: Sending email to {school_abbreviation} admins at {to_email} about stolen device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.')
-    print(f'INFO: Sending email to {school_abbreviation} admins at {to_email} about stolen device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.', file=log)
+    print(f'INFO: Sending email to {school_abbreviation} admins at {to_email if not TEST_RUN else TEST_EMAIL} about stolen device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.')
+    print(f'INFO: Sending email to {school_abbreviation} admins at {to_email if not TEST_RUN else TEST_EMAIL} about stolen device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.', file=log)
     try:
         # Do the email sending
         mime_message = EmailMessage()  # create an email message object
@@ -429,6 +429,87 @@ def send_stolen_email_to_admins(school_abbreviation: str, stu_num: int, first_na
     except Exception as er:
         print(f'ERROR while sending email to {to_email} about breakage ID {breakageID}: {er}')
         print(f'ERROR while sending email to {to_email} about breakage ID {breakageID}: {er}', file=log)
+
+def send_bus_email_to_parents(breakage_id: int, breakage_date: str, school_name: str, dev_name: str, serial: str, stu_num: int, stu_dcid: int, first_name: str, last_name: str) -> None:
+    """Function to send email about a device left on the bus to parents."""
+    try:
+        # get_data_access_contacts(stuDCID)  # get the contacts with data access
+        print(f'DBUG: Getting contacts for {stu_num} - DCID {stu_dcid} for breakageID {breakage_id}')
+        print(f'DBUG: Getting contacts for {stu_num} - DCID {stu_dcid} for breakageID {breakage_id}', file=log)
+        # get_data_access_contacts(stuDCID)  # get the contacts with data access
+        contacts_to_email = get_custody_contacts(stu_dcid)  # get the contacts with custody
+        if contacts_to_email:
+            for contact in contacts_to_email:
+                try:
+                    contact_first_last = f'{contact[0]} {contact[1]}'  # get their name in one string
+                    to_email = str(contact[2]) if not TEST_RUN else TEST_EMAIL
+                    print(f'INFO: Sending email to {contact_first_last} - {to_email} about left on bus device breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}')
+                    print(f'INFO: Sending email to {contact_first_last} - {to_email} about left on bus device breakageID {breakage_id} that happened on {breakage_date} at {school_name} to device {serial} by student {stu_num}', file=log)
+                    # Do the email sending
+                    mime_message = EmailMessage()  # create an email message object
+                    # define headers
+                    mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+                    mime_message['Subject'] = f'{first_name} {last_name}\'s District 118 Chromebook Left on Bus'  # subject line of the email
+
+                    # Plain-text fallback (for email clients that don't support HTML)
+                    plain_text = (
+                        f'Dear {contact_first_last},\n'
+                        f'This email is to notify you that your student {first_name} {last_name} at {school_name} left their Chromebook on their bus on {breakage_date}. Our goal is to keep you informed regarding the condition of the technology provided to your student.\n\n'
+                        f'Next steps & Key Information:\n'
+                        f'  • Review Device Details: The details for the device are included below. You can also log into the PowerSchool Parent Portal for more information on your student\'s devices.\n'
+                        f'  • Talk to Your Student: Please speak with your student about making sure they have their Chromebook with them when they get off the bus.\n'
+                        f'  • Return: The device will be returned to the building as soon as possible, and your student will be contacted when it is available.\n'
+                        f'  • Questions: If you have any questions, please contact your child\'s school directly.\n\n'
+                        f'Lost Device Details:\n'
+                        f'  • Device Name: {dev_name}\n'
+                        f'  • Serial Number: {serial}\n'
+                        f'  • Date Left on Bus: {breakage_date}\n\n'
+                        f'Best regards,\n'
+                        f'District 118 Technology Department'
+                    )
+
+                    # HTML version with bold formatting
+                    html_content = (
+                        f'<p>Dear {contact_first_last},</p>'
+                        f'<p>This email is to notify you that your student {first_name} {last_name} at {school_name} left their Chromebook on their bus on {breakage_date}. Our goal is to keep you informed regarding the condition of the technology provided to your student.</p>'
+                        f'<p><b>Next steps & Key Information:</b></p>'
+                        f'<ul>'
+                        f'  <li><b>Review Device Details:</b> The details for the device are included below. You can also log into the PowerSchool Parent Portal for more information on your student\'s devices.</li>'
+                        f'  <li><b>Talk to Your Student:</b> Please speak with your student about making sure they have their Chromebook with them when they get off the bus.</li>'
+                        f'  <li><b>Return:</b> The device will be returned to the building as soon as possible, and your student will be contacted when it is available.</li>'
+                        f'  <li><b>Questions:</b> If you have any questions, please contact your child\'s school directly.</li>'
+                        f'</ul>'
+                        f'<p><b>Lost Device Details:</b></p>'
+                        f'<ul>'
+                        f'  <li><b>Device Name:</b> {dev_name}</li>'
+                        f'  <li><b>Serial Number:</b> {serial}</li>'
+                        f'  <li><b>Date Left on Bus:</b> {breakage_date}</li>'
+                        f'</ul>'
+                        f'<p>Best regards,<br><b>District 118 Technology Department</b></p>'
+                    )
+
+                    # Set plain text as the base content, then add HTML as the preferred alternative
+                    mime_message.set_content(plain_text)
+                    mime_message.add_alternative(html_content, subtype='html')
+
+                    if not DRY_RUN:  # only encode and send the email if we are not in a dry run
+                        # encoded message
+                        encoded_message = base64.urlsafe_b64encode(mime_message.as_bytes()).decode()
+                        create_message = {'raw': encoded_message}
+                        send_message = (service.users().messages().send(userId="me", body=create_message).execute())
+                        print(f'DBUG: Email sent, message ID: {send_message["id"]}')  # print out resulting message Id
+                        print(f'DBUG: Email sent, message ID: {send_message["id"]}', file=log)
+                    else:
+                        print(f'INFO: In a dry run, would have sent an email to {to_email if not TEST_RUN else TEST_EMAIL}')
+                        print(f'INFO: In a dry run, would have sent an email to {to_email if not TEST_RUN else TEST_EMAIL}', file=log)
+                except HttpError as er:   # catch Google API http errors, get the specific message and reason from them for better logging
+                    status = er.status_code
+                    details = er.error_details[0]  # error_details returns a list with a dict inside of it, just strip it to the first dict
+                    print(f'ERROR {status} from Google API while sending left on bus notification email to {to_email} about device with breakage ID {breakageID}: {details["message"]}. Reason: {details["reason"]}')
+                    print(f'ERROR {status} from Google API while sending left on bus notification email to {to_email} about device with breakage ID {breakageID}: {details["message"]}. Reason: {details["reason"]}', file=log)
+    except Exception as er:
+        print(f'ERROR while sending email to {to_email} about left on bus device with breakage ID {breakageID}: {er}')
+        print(f'ERROR while sending email to {to_email} about left on bus device with breakage ID {breakageID}: {er}', file=log)
 
 if __name__ == '__main__':
     with open('breakage_email_log.txt', 'w') as log:
@@ -503,6 +584,10 @@ if __name__ == '__main__':
                                     print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody and admins', file=log)
                                     send_stolen_email_to_parents(breakageID, breakageDate, schoolName, devName, serial, stuNum, stuDCID, firstName, lastName)  # send the email to the contacts with custody
                                     send_stolen_email_to_admins(schoolAbbrev, stuNum, firstName, lastName, breakageDate, stuDCID)  # send the email to the principals to notify them of the stolen device and investigation needed
+                                elif deviceStatus == 'Left on Bus':
+                                    print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody')
+                                    print(f'DBUG: Device status is {deviceStatus}, sending email to contacts with custody', file=log)
+                                    send_bus_email_to_parents(breakageID, breakageDate, schoolName, devName, serial, stuNum, stuDCID, firstName, lastName)  # send the email to contacts with custody
 
                             except Exception as er:
                                 print(f'ERROR while processing breakage {breakage[6]}: {er}')
