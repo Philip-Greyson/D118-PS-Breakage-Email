@@ -21,6 +21,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from email.utils import formataddr  # builds a properly quoted/encoded "Name <addr>" header
 
 # setup db connection
 DB_UN = os.environ.get('POWERSCHOOL_READ_USER')  # username for read-only database user
@@ -31,6 +32,9 @@ print(f'DBUG: Database Username: {DB_UN} |Password: {DB_PW} |Server: {DB_CS}')  
 DAYS_TO_SEARCH_BACK = 1  # set the number of days ago to search for breakages. If you run it every day, it should be set to 1. If it is every week, 7, etc.
 
 BOOKKEEPER_EMAIL_SUFFIX = '-bookkeeper@d118.org'  # the email suffix for the bookkeepers, which is just the school abbreviation with "-bookkeeper" added to the end of it
+
+FROM_NAME = 'D118 Technology Department'  # the display name of the email that it will be sent from. This can differ from the actual account name that is used
+FROM_ADDRESS = ''  # the email address it will come from. This needs to match whatever account is used to sign in to generate the token, otherwise it wont work
 
 DRY_RUN = False  # set to True to not actually send any emails, just print out the info for what would have been sent. Set to False to actually send the emails.
 TEST_RUN = True  # set to True to send the emails to a specific recipient (set in the environment variable TEST_EMAIL) instead of the actual contacts, for testing purposes. Set to False to send to the actual contacts.
@@ -85,6 +89,7 @@ def send_breakage_email_to_parents(breakage_id: int, breakage_date: str, school_
                     mime_message = EmailMessage()  # create an email message object
                     # define headers
                     mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+                    mime_message['From'] = formataddr((FROM_NAME, FROM_ADDRESS))  # -> 'D118 Technology Department <do_not_reply@d118.org>'
                     mime_message['Subject'] = f'Notification of Student Device Damage - {firstName} {lastName}'  # subject line of the email
 
                     # Plain-text fallback (for email clients that don't support HTML)
@@ -166,6 +171,7 @@ def send_lost_email_to_parents(breakage_id: int, breakage_date: str, school_name
                     mime_message = EmailMessage()  # create an email message object
                     # define headers
                     mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+                    mime_message['From'] = formataddr((FROM_NAME, FROM_ADDRESS))  # -> 'D118 Technology Department <do_not_reply@d118.org>'
                     mime_message['Subject'] = f'Important: {first_name} {last_name}\'s District 118 Chromebook Reported as Lost'  # subject line of the email
 
                     # Plain-text fallback (for email clients that don't support HTML)
@@ -251,6 +257,7 @@ def send_stolen_email_to_parents(breakage_id: int, breakage_date: str, school_na
                     mime_message = EmailMessage()  # create an email message object
                     # define headers
                     mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+                    mime_message['From'] = formataddr((FROM_NAME, FROM_ADDRESS))  # -> 'D118 Technology Department <do_not_reply@d118.org>'
                     mime_message['Subject'] = f'Important: {first_name} {last_name}\'s District 118 Chromebook Reported as Stolen'  # subject line of the email
 
                     # Plain-text fallback (for email clients that don't support HTML)
@@ -323,6 +330,7 @@ def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str,
         mime_message = EmailMessage()  # create an email message object
         # define headers
         mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+        mime_message['From'] = formataddr((FROM_NAME, FROM_ADDRESS))  # -> 'D118 Technology Department <do_not_reply@d118.org>'
         mime_message['Subject'] = f'Charge Needed: {first_name} {last_name}\'s District 118 Chromebook Reported as Lost'  # subject line of the email
 
         # Plain-text fallback (for email clients that don't support HTML)
@@ -389,6 +397,7 @@ def send_stolen_email_to_admins(school_abbreviation: str, stu_num: int, first_na
         mime_message = EmailMessage()  # create an email message object
         # define headers
         mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+        mime_message['From'] = formataddr((FROM_NAME, FROM_ADDRESS))  # -> 'D118 Technology Department <do_not_reply@d118.org>'
         mime_message['Subject'] = f'Investigation Needed: {first_name} {last_name}\'s District 118 Chromebook Reported as Stolen'  # subject line of the email
 
         # Plain-text fallback (for email clients that don't support HTML)
@@ -449,6 +458,7 @@ def send_bus_email_to_parents(breakage_id: int, breakage_date: str, school_name:
                     mime_message = EmailMessage()  # create an email message object
                     # define headers
                     mime_message['To'] = to_email if not TEST_RUN else TEST_EMAIL  # if it's a test run, send to the test email instead of the actual contact's email
+                    mime_message['From'] = formataddr((FROM_NAME, FROM_ADDRESS))  # -> 'D118 Technology Department <do_not_reply@d118.org>'
                     mime_message['Subject'] = f'{first_name} {last_name}\'s District 118 Chromebook Left on Bus'  # subject line of the email
 
                     # Plain-text fallback (for email clients that don't support HTML)
