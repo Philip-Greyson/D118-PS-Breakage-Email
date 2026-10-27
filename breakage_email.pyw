@@ -32,6 +32,7 @@ print(f'DBUG: Database Username: {DB_UN} |Password: {DB_PW} |Server: {DB_CS}')  
 DAYS_TO_SEARCH_BACK = 1  # set the number of days ago to search for breakages. If you run it every day, it should be set to 1. If it is every week, 7, etc.
 
 BOOKKEEPER_EMAIL_SUFFIX = '-bookkeeper@d118.org'  # the email suffix for the bookkeepers, which is just the school abbreviation with "-bookkeeper" added to the end of it
+DISTRICT_LOST_STOLEN_ADDITIONS = os.environ.get('DISTRICT_LOST_STOLEN_EMAILS')  # emails that should also be included on the lost/stolen emails besides the bookeepers and admins
 
 FROM_NAME = 'D118 Technology Department'  # the display name of the email that it will be sent from. This can differ from the actual account name that is used
 FROM_ADDRESS = ''  # the email address it will come from. This needs to match whatever account is used to sign in to generate the token, otherwise it wont work
@@ -322,7 +323,7 @@ def send_stolen_email_to_parents(breakage_id: int, breakage_date: str, school_na
 
 def send_lost_email_to_bookkeepers(school_abbreviation: str, breakage_date: str, stu_num: int, first_name: str, last_name: str, serial: str) -> None:
     """Function to send the email about the lost device to the bookkeepers."""
-    to_email = f"{school_abbreviation}{BOOKKEEPER_EMAIL_SUFFIX}"
+    to_email = f"{school_abbreviation}{BOOKKEEPER_EMAIL_SUFFIX},{DISTRICT_LOST_STOLEN_ADDITIONS}"
     print(f'INFO: Sending email to bookkeeper at {to_email if not TEST_RUN else TEST_EMAIL} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.')
     print(f'INFO: Sending email to bookkeeper at {to_email if not TEST_RUN else TEST_EMAIL} about lost device for student {stu_num} - {first_name} {last_name} that happened on {breakage_date}.', file=log)
     try:
@@ -381,7 +382,7 @@ def send_stolen_email_to_admins(school_abbreviation: str, stu_num: int, first_na
     principal_email = str(admins[0][1]) if admins[0][1] else ''
     asst_principal_name = str(admins[0][2]) if admins[0][2] else f'{school_abbreviation} Assistant Principal'
     asst_principal_email = str(admins[0][3]) if admins[0][3] else ''
-    to_email = f'{principal_email},{asst_principal_email}'
+    to_email = f'{principal_email},{asst_principal_email},{DISTRICT_LOST_STOLEN_ADDITIONS}'
     to_names = f'{principal_name} and {asst_principal_name}'
     if school_abbreviation == 'WHS':  # for WHS, we also want to send to the dean
         cur.execute('SELECT custom_deans_house, custom_deans_house_email FROM u_studentsuserfields WHERE studentsdcid = :dcid', dcid=stu_dcid)
